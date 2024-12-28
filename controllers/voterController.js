@@ -1,6 +1,13 @@
 const voterModel = require("../models/voterModel")
 const HttpError = require("../models/errorModel")
 const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
+require("dotenv").config()
+
+const generateToken = (payload)=>{
+    const token = jwt.sign(payload, process.env.secret, {expiresIn: "1d"})
+    return token
+}
 const registerVoter = async (req, res, next) => {
     try {
         const { fullName, email, password, password2 } = req.body;
@@ -61,12 +68,52 @@ const registerVoter = async (req, res, next) => {
 
 
 const login = async(req,res,next)=>{
-    res.json('login voter')
+    try {
+        const {email, password} = req.body
+        // validate user password
+        if(!email || !password){
+            return next(new HttpError("All fields are required", 422))
+        }
+
+        const newEmail = email.toLowerCase()
+        const voter = await voterModel.findOne({email: newEmail})
+
+        if (!voter){
+            return next (new HttpError("Voter not in Database", 422))
+        }
+
+        //compare password
+        const comparePass = await bcrypt.compare(password, voter.password)
+        if (!comparePass){
+            return next(new HttpError('passwords do not match', 422))
+        }
+         const {isAdmin, _id:id, votedElections} = voter
+         const token = generateToken({id, isAdmin})
+         res.json({
+            id,
+            isAdmin,
+            token,
+            votedElections
+         })
+    } catch (error) {
+        console.log(error)
+        return next (new HttpError("Login Failed. Check credentials", 400))
+    }
 }
 
 
 const getVoter = async(req,res,next)=>{
-    res.json('get voter')
+    try {
+        const {id} = req.params
+        const voter = await voterModel.findById(id).select('-password')
+
+        res.json({
+            voter
+        })
+    } catch (error) {
+        console.log(error)
+        return next (new HttpError('Couldnt get User', 422))
+    }
 }
 
 module.exports={registerVoter, login, getVoter}

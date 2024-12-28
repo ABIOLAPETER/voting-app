@@ -1,28 +1,28 @@
-const {Schema, model, Types} = require("mongoose")
+const { Schema, model, Types } = require("mongoose");
 
 const electionSchema = new Schema({
-    title:{
+    title: {
         type: String,
-        required: true
+        required: true // The title is mandatory
     },
-    details:{
+    description: {
         type: String,
-        required: true
+        required: true // The description is mandatory
     },
-    thumbmail:{
+    thumbnail: {
         type: String,
-        required: true
+        required: true // A thumbnail image is mandatory
     },
-    candidates:[{
-        types: Types.ObjectId,
-        required: true,
-        ref: 'Candidate'
+    candidates: [{
+        type: Types.ObjectId, // Reference to Candidate collection
+        required: true, // Candidates are mandatory
+        ref: 'Candidate' // Reference model name
     }],
-    voters:[{
-        types: Types.ObjectId,
-        required: true,
-        ref: 'Voter'
-    }],
-})
+    voters: [{
+        type: Types.ObjectId, // Reference to Voter collection
+        required: true, // Voters are mandatory
+        ref: 'Voter' // Reference model name
+    }]
+});
 
-module.exports = model('Election', electionSchema)
+module.exports = model('Election', electionSchema);

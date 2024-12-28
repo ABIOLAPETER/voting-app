@@ -17,7 +17,7 @@ const candidateSchema= new Schema({
         type: Number,
         default: 0
     },
-    election:[{
+    electionId:[{
         type: Types.ObjectId,
         required: true,
         ref: 'Election'
